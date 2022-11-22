@@ -1,8 +1,13 @@
 from typing import Dict, Any
-
-import jupyter_dash as dash
 import pandas as pd
 import numpy as np
+import plotly.express as px
+
+
+import dash
+from dash import dcc
+from dash import html
+import plotly.graph_objects as go
 
 df = pd.read_csv("Airbnb_Open_Data.csv", low_memory=False)
 print(list(df.columns))
@@ -33,5 +38,3 @@ def is_exact(data: pd.DataFrame) -> pd.DataFrame:
 
 
 df_clean = is_exact(df_clean)
-
-
