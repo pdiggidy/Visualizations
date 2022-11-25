@@ -5,9 +5,11 @@ import plotly
 
 import plotly.express as px
 
+if __name__ == "__main__":
+    pass
 
-def generate_scatter(frame: pd.DataFrame, size_var, color_var) -> plotly.graph_objs.Figure:
-    exact_rows = frame[frame["exact"] is True]
+def generate_scatter(frame: pd.DataFrame, size_var="number of reviews", color_var="scaled") -> plotly.graph_objs.Figure:
+    exact_rows = frame[frame["exact"] == True]
     fig = px.scatter_mapbox(exact_rows, lat="lat", lon="long",
                             color=color_var, size=size_var,
                             color_continuous_scale="aggrnyl_r")
