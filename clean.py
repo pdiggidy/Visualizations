@@ -1,6 +1,7 @@
 from typing import Dict, Any
 import pandas as pd
 import numpy as np
+from POI import time_square
 
 import dash
 from dash import dcc
@@ -23,4 +24,14 @@ df_clean["host name"] = df["host name"].fillna("unavailable")  # If there's no h
 
 df_clean = df_clean.dropna(subset=["neighbourhood", "neighbourhood group", "long"], how="all")
 
+df_clean["availability 365"] = df_clean["availability 365"].apply(lambda x: x if x <= 365 else np.nan)
+df_clean["availability 365"] = df_clean["availability 365"].apply(lambda x: x if x >= 0 else np.nan)
+
 df_clean = is_exact(df_clean)
+df_clean["price"] = df_clean["price"].apply(lambda x: str(x).replace("$", "").replace(",", "")).astype(float)
+df_clean["service fee"] = df_clean["service fee"].apply(lambda x: str(x).replace("$", "").replace(",", "")).astype(float)
+
+
+df_clean["distanceTimeSquare"] = df_clean.apply(lambda x: time_square.calculate_distance(x.lat, x.long), axis=1)
+
+df_neighbreviewmean = df_clean.groupby("neighbourhood").describe()["review rate number"]["mean"]

@@ -2,12 +2,12 @@ from typing import Dict, Any
 import pandas as pd
 import numpy as np
 
-from clean import df_clean
+from clean import df_clean, df_neighbreviewmean
 import plotly.express as px
 from math import floor
 import json
-from dash import Dash, dcc, html, Input, Output
-from generate_graphs import generate_scatter, generate_choropleth
+from dash import Dash, dcc, html, Input, Output, State
+from generate_graphs import *
 
 import dash
 
@@ -21,32 +21,108 @@ df_clean["number of reviews"] = df_clean["number of reviews"] * 100
 
 df_test = df_clean
 px.set_mapbox_access_token("pk.eyJ1IjoicG5pZXJvcCIsImEiOiJjbGFxdnJkNGMwMGtuM3FwYmN5czV5NnowIn0.mYk_lZjfdsJQhxbTBsRbmw")
-fig = px.scatter_mapbox(df_test, lat="lat", lon="long", color="scaled", size="number of reviews",
-                        color_continuous_scale="aggrnyl_r")
-# fig.update_traces(cluster=dict(enabled=True, color=["blue","red","green"], maxzoom=11))
-# fig.show()
+# fig = px.scatter_mapbox(df_test, lat="lat", lon="long", color="scaled", size="number of reviews",
+#                         color_continuous_scale="aggrnyl_r")
+# fig.update_layout({
+#     "margin": dict(l=20, r=20, t=20, b=20),
+#     "showlegend": True,
+#     "paper_bgcolor": "rgba(0,0,0,0)",
+#     "plot_bgcolor": "rgba(0,0,0,0)",
+#     "font": {"color": "white"},
+#     "mapbox_style":"dark"})
+# # fig.update_traces(cluster=dict(enabled=True, color=["blue","red","green"], maxzoom=11))
+# # fig.show()
+#
+# fig2 = px.choropleth_mapbox(df_clean, geojson=neighb, locations="neighbourhood", featureidkey="properties.neighborhood",
+#                             color="scaled", center={"lat": 40.7128, "lon": -74.0060}, zoom=10,
+#                             color_continuous_scale="aggrnyl_r")
+# fig2.update_geos(fitbounds="locations", visible=False)
+# fig2.update_layout({
+#     "margin": dict(l=20, r=20, t=20, b=20),
+#     "paper_bgcolor": "rgba(0,0,0,0)",
+#     "plot_bgcolor": "rgba(0,0,0,0)",
+#     "font": {"color": "white"},
+#     "mapbox_style":"dark"})
 
-fig2 = px.choropleth_mapbox(df_clean, geojson=neighb, locations="neighbourhood", featureidkey="properties.neighborhood",
-                            color="scaled", center={"lat": 40.7128, "lon": -74.0060}, zoom=10,
-                            color_continuous_scale="aggrnyl_r")
-fig2.update_geos(fitbounds="locations", visible=False)
+# fig = generate_scattermap(frame=df_clean, color_var="distanceTimeSquare", size_var="review rate number")
+fig2 = generate_choropleth(frame=df_neighbreviewmean, poly_data=neighb)
+fig_scat = generate_scatter(frame=df_clean, xval="distanceTimeSquare", yval="price")
+app = dash.Dash(eager_loading=True)
 
-app = dash.Dash()
-
-app.layout = html.Div(className='row', children=[
+app.layout = html.Div(className='page', children=[
     html.H1("Dashboard Prototype"),
-    dcc.Dropdown(["number of reviews", "Reviews per month"], value="number of reviews", id="drop"),
+    dcc.RadioItems(
+        [
+            {
+                "label": html.Div(['Light'], style={'color': 'White', 'font-size': 20}),
+                "value": "Light",
+            },
+            {
+                "label": html.Div(['Dark'], style={'color': 'White', 'font-size': 20}),
+                "value": "Dark",
+            },
+        ], value='Dark'
+    ),
     html.Div(children=[
-        dcc.Graph(id="graph1", figure=fig, style={'display': 'inline-block'}),
-        dcc.Graph(id="ch_graph", figure=fig2, style={'display': 'inline-block'})
+        dcc.Dropdown(df_clean.columns, id="drop1", value="number of reviews",
+                     style=dict(width='50%')),
+        dcc.Dropdown(df_clean.columns, id="drop2", value="review rate number",
+                     style=dict(width='50%'))],
+        style=dict(display='flex')
+    ),
+    html.Div(children=[
+        dcc.Graph(id="scatter_map", style={'display': 'inline-block'}),
+        dcc.Store(id="fig_store"),
+        dcc.Graph(id="ch_graph", figure=fig2, style={'display': 'inline-block'}),
+
+        html.Div(children=[
+            html.Div(children=[
+                html.H3("XVal", style=dict(color="White")),
+                dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_x", style=dict(width="50%")),
+                html.H3("YVal", style=dict(color="White")),
+                dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_y", style=dict(width="50%"))
+            ], style=dict(display="flex")),
+            dcc.Graph(id="scatter")
+        ])
     ])
 ])
 
 
-@app.callback(Output(component_id="graph1", component_property="figure"), Input("drop", "value"))
-def update_graphs(input_value):
-    return generate_scatter(frame=df_clean,color_var=input_value.lower())
-    # return generate_scatter(frame=df_clean)
+@app.callback(
+    Output("fig_store", "data"),
+    Input("drop1", "value"),
+    Input("drop2", "value")
+)
+def update_graphs(sizeval, colorvar):
+    fig_new = generate_scattermap(frame=df_clean, color_var=colorvar, size_var=sizeval)
+    return fig_new
+
+# change the id in the state and output to change the id of your plot
+
+#Theres a bug with the dynamic updating of mapbox figures in Plotly right now this is the workaround using some JS
+app.clientside_callback(
+    '''
+    function (figure, graph_id) {
+        if(figure === undefined) {
+            return {'data': [], 'layout': {}};
+        }
+        var graphDiv = document.getElementById(graph_id);
+        var data = figure.data;
+        var layout = figure.layout;        
+        Plotly.newPlot(graphDiv, data, layout);
+    }
+    ''',
+    Output('scatter_map', 'figure'),
+    Input('fig_store', 'data'),
+    State('scatter_map', 'id')
+)
+
+@app.callback(
+    Output("scatter", "figure"),
+    Input("drop_x", "value"),
+    Input("drop_y", "value"))
+def update_scatter(xval, yval):
+    return generate_scatter(frame=df_clean, xval=xval, yval=yval)
 
 
 app.css.config.serve_locally = True
