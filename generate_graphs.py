@@ -30,11 +30,10 @@ def generate_scattermap(frame: pd.DataFrame, size_var,
     return fig_mapscat
 
 
-def generate_choropleth(frame: pd.DataFrame, poly_data) -> plotly.graph_objs.Figure:
-    fig = px.choropleth_mapbox(frame, geojson=poly_data, locations=frame.index,
+def generate_choropleth(frame: pd.DataFrame, poly_data, color_var) -> plotly.graph_objs.Figure:
+    fig = px.choropleth_mapbox(frame, geojson=poly_data, locations="neighbourhood",
                                featureidkey="properties.neighborhood",
-                               color="mean", center={"lat": 40.7128, "lon": -74.0060}, zoom=10,
-                               color_continuous_scale="aggrnyl_r")
+                               color=color_var, center={"lat": 40.7128, "lon": -74.0060}, zoom=10)
     fig.update_geos(fitbounds="locations")
     fig.update_layout({
         "margin": dict(l=20, r=20, t=20, b=20),
