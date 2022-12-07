@@ -2,7 +2,6 @@ from typing import Dict, Any
 import pandas as pd
 import numpy as np
 
-from clean import df_clean, df_neighbreviewmean
 import plotly.express as px
 from math import floor
 import json
@@ -12,6 +11,8 @@ from generate_graphs import *
 import dash
 
 neighb = json.load(open("neighb.json"))
+df_clean = pd.read_csv("AirbnbClean.csv")
+df_neighbreviewmean = pd.read_csv("neighb_means.csv")
 
 df_clean["scaled"] = df_clean["review rate number"]
 mean = floor(df_clean["scaled"].mean())
