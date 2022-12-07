@@ -34,6 +34,9 @@ df_clean["service fee"] = df_clean["service fee"].apply(lambda x: str(x).replace
 
 df_clean["distanceTimeSquare"] = df_clean.apply(lambda x: time_square.calculate_distance(x.lat, x.long), axis=1)
 df_clean.to_csv("AirbnbClean.csv")
+df_clean.replace("brookln", "Brooklyn", inplace=True)
+df_clean.replace("manhatan", "Manhattan", inplace=True)
+
 
 means_list = []
 
