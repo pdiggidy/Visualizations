@@ -10,11 +10,14 @@ from generate_graphs import *
 from time import monotonic
 
 import dash
+#https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page Neighb maps
+#https://capitalplanning.nyc.gov/capitalproject/846P-5FRESHN#12.88/40.5704/-74.1954 POI locations
+##TODO Select price range of hotels (histogram) limit map view to those hotels
+##TODO Limit results to distance from park for example
 
 
 df_clean = pd.read_csv("AirbnbClean.csv", low_memory=False, index_col=0)
 df_means = pd.read_csv("neighb_means.csv")
-print(df_means.columns)
 
 neighb = json.load(open("neighb.json"))
 
@@ -32,19 +35,20 @@ fig_scat = generate_scatter(frame=df_clean, xval="distanceTimeSquare", yval="pri
 app = dash.Dash(eager_loading=True)
 
 app.layout = html.Div(className='page', children=[
-    html.H1("Dashboard Prototype"),
-    dcc.RadioItems(
-        [
-            {
-                "label": html.Div(['Light'], style={'color': 'White', 'font-size': 20}),
-                "value": "Light",
-            },
-            {
-                "label": html.Div(['Dark'], style={'color': 'White', 'font-size': 20}),
-                "value": "Dark",
-            },
-        ], value='Dark'
-    ),
+    html.Div(children=[
+        html.H1("Dashboard Prototype", style=dict(width='75%'), id="title_field"),
+        dcc.RadioItems(
+            [
+                {
+                    "label": html.Div(['Light'], style={'color': 'White', 'font-size': 20}),
+                    "value": "Light",
+                },
+                {
+                    "label": html.Div(['Dark'], style={'color': 'White', 'font-size': 20}),
+                    "value": "Dark",
+                },
+            ], value='Dark', inline=True
+            , id="testid")], style=dict(display='flex')),
     html.Div(children=[
         dcc.Dropdown(df_clean.columns, id="drop1", value="number of reviews",
                      style=dict(width='50%')),
@@ -137,6 +141,13 @@ app.clientside_callback(
     Input("drop_y", "value"))
 def update_scatter(xval, yval):
     return generate_scatter(frame=df_clean, xval=xval, yval=yval)
+
+
+@app.callback(
+    Output("title_field", "title"),
+    Input("testid", "value"))
+def change_page_setting(val):
+    print(val)
 
 
 app.css.config.serve_locally = True

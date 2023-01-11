@@ -1,5 +1,7 @@
 from math import radians, cos, sin, asin, sqrt
 
+import pandas as pd
+
 
 class PointOfInterest:
     def __init__(self, lat, lon, name):
@@ -21,5 +23,17 @@ class PointOfInterest:
         # calculate the result
         return c * r
 
+
+class SubwayEntrance(PointOfInterest):
+    pass
+
+
+stations = pd.read_csv("NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+locations = stations[["Station Name","Entrance Latitude","Entrance Longitude"]]
+
+station_Objs = []
+
+for i in locations.iterrows():
+    station_Objs.append(SubwayEntrance(i[1][1],i[1][2],i[1][0]))
 
 time_square = PointOfInterest(lat=40.758896, lon=-73.985130, name="TimeSquare")
