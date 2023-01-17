@@ -17,7 +17,7 @@ def generate_scattermap(frame: pd.DataFrame, size_var,
     exact_rows.dropna(subset=size_var, inplace=True)
     exact_rows.dropna(subset=color_var, inplace=True)
     fig_mapscat = px.scatter_mapbox(exact_rows, lat="lat", lon="long",
-                            color=color_var, size=size_var)
+                                    color=color_var, size=size_var)
     # , color_continuous_scale="aggrnyl_r")
     # fig_mapscat.update_traces(cluster=dict(enabled=True, color="red", opacity=0.7, maxzoom=11))
     fig_mapscat.update_layout({
@@ -56,4 +56,15 @@ def generate_scatter(frame, xval, yval, color="host_identity_verified"):
         "paper_bgcolor": "rgba(0,0,0,0)",
         "plot_bgcolor": "rgba(0,0,0,0)",
         "font": {"color": "white"}})
+    return fig
+
+
+def generate_hist(frame,x_val, min_val= None, max_val= None):
+    if min_val and max_val:
+        mask_low = frame[x_val] >= min_val
+        mask_high = frame[x_val] <= max_val
+        frame = frame[mask_low & mask_high]
+        fig = px.histogram(frame, x=x_val, color="host_identity_verified")
+    else:
+        fig = px.histogram(frame, x=x_val, color="host_identity_verified")
     return fig

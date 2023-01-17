@@ -5,24 +5,22 @@ import numpy as np
 import plotly.express as px
 from math import floor
 import json
+import dash
 from dash import Dash, dcc, html, Input, Output, State
 from generate_graphs import *
-from time import monotonic
 
-import dash
-#https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page Neighb maps
-#https://capitalplanning.nyc.gov/capitalproject/846P-5FRESHN#12.88/40.5704/-74.1954 POI locations
-##TODO Select price range of hotels (histogram) limit map view to those hotels
-##TODO Limit results to distance from park for example
+# https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page Neighb maps
+# https://capitalplanning.nyc.gov/capitalproject/846P-5FRESHN#12.88/40.5704/-74.1954 POI locations
+# TODO Select price range of hotels (histogram) limit map view to those hotels
+# TODO Limit results to distance from park for example
 
 
 df_clean = pd.read_csv("AirbnbClean.csv", low_memory=False, index_col=0)
 df_means = pd.read_csv("neighb_means.csv")
-print(df_means.columns)
 
 neighb = json.load(open("neighb.json"))
-df_clean = pd.read_csv("AirbnbClean.csv")
-df_neighbreviewmean = pd.read_csv("neighb_means.csv")
+df_clean = pd.read_csv("AirbnbClean.csv", index_col=0, low_memory=False)
+df_neighbreviewmean = pd.read_csv("neighb_means.csv", low_memory=False)
 
 df_clean["scaled"] = df_clean["review rate number"]
 mean = floor(df_clean["scaled"].mean())
@@ -51,7 +49,7 @@ px.set_mapbox_access_token("pk.eyJ1IjoicG5pZXJvcCIsImEiOiJjbGFxdnJkNGMwMGtuM3FwY
 # "font": {"color": "white"}, "mapbox_style":"dark"})
 
 # fig = generate_scattermap(frame=df_clean, color_var="distanceTimeSquare", size_var="review rate number")
-fig2 = generate_choropleth(frame=df_neighbreviewmean, poly_data=neighb)
+fig2 = generate_choropleth(frame=df_neighbreviewmean, poly_data=neighb, color_var="review rate number")
 fig_scat = generate_scatter(frame=df_clean, xval="distanceTimeSquare", yval="price")
 app = dash.Dash(eager_loading=True)
 
@@ -84,13 +82,16 @@ app.layout = html.Div(className='page', children=[
 
         html.Div(children=[
             html.Div(children=[
-                html.H3("XVal", style=dict(color="White")),
-                dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_x", style=dict(width="50%")),
-                html.H3("YVal", style=dict(color="White")),
-                dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_y", style=dict(width="50%"))
-            ], style=dict(display="flex")),
-            dcc.Graph(id="scatter")
-        ])
+                html.Div(children=[
+                    html.H3("XVal", style=dict(color="White")),
+                    dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_x", style=dict(width="50%")),
+                    html.H3("YVal", style=dict(color="White")),
+                    dcc.Dropdown(df_clean.columns, value="number of reviews", id="drop_y", style=dict(width="50%"))
+                ], style=dict(display="flex")),
+                dcc.Graph(id="scatter")]),
+            dcc.Graph(id="histogram"),
+            dcc.RangeSlider(min(df_clean["price"]),max(df_clean["price"]), 100, id="slider")]
+)
     ])
 ])
 
@@ -135,10 +136,14 @@ def update_scatter(xval, yval):
 
 
 @app.callback(
-    Output("title_field", "title"),
-    Input("testid", "value"))
-def change_page_setting(val):
-    print(val)
+    Output("histogram", "figure"),
+    Input("slider", "value"))
+def update_hist(val):
+    if val:
+        fig = generate_hist(df_clean, "price", val[0], val[1])
+    else:
+        fig = generate_hist(df_clean, "price")
+    return fig
 
 
 app.css.config.serve_locally = True
