@@ -28,7 +28,11 @@ df_clean["scaled"].fillna(mean, inplace=True)
 df_clean.dropna(subset=["number of reviews"], inplace=True)
 df_clean["number of reviews"] = df_clean["number of reviews"] * 100
 
-df_test = df_clean
+filter_val = "price"
+min_val = min(df_clean["price"])
+max_val = max(df_clean["price"])
+
+df_subset = df_clean[df_clean[filter_val >= min_val & filter_val <= max_val]]
 px.set_mapbox_access_token("pk.eyJ1IjoicG5pZXJvcCIsImEiOiJjbGFxdnJkNGMwMGtuM3FwYmN5czV5NnowIn0.mYk_lZjfdsJQhxbTBsRbmw")
 # fig = px.scatter_mapbox(df_test, lat="lat", lon="long", color="scaled", size="number of reviews",
 #                         color_continuous_scale="aggrnyl_r")

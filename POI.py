@@ -4,17 +4,18 @@ import pandas as pd
 
 
 class PointOfInterest:
-    def __init__(self,name, type, lat=None, lon=None, geojson=None, cat=None):
+    def __init__(self ,name, kind, lat=None, lon=None, geojson=None, cat=None):
         self.lat = lat
         self.lon = lon
         self.name = name
-        if type == "Point":
+        self.kind = kind
+        if kind == "Point":
             self.point = Point(lon, lat)
-        elif type == "Shape":
+        elif kind == "Shape":
             self.shape = Polygon(geojson[0][0])
-        self.cat=cat
+        self.cat = cat
 
-    def point_distance(self, lon_house, lat_house):
+    def point_distance(self, lat_house, lon_house):
         point_house = Point(lon_house, lat_house)
         return self.point.distance(point_house)
 
