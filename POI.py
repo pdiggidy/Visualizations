@@ -16,8 +16,7 @@ class PointOfInterest:
         self.cat = cat
 
     def point_distance(self, lat_house, lon_house):
-        point_house = Point(lon_house, lat_house)
-        return self.point.distance(point_house)
+        return haversine((self.lon,self.lat), lat_house, lon_house)
 
     def shape_distance(self, house_lat,house_lon):
         # Create a Shapely Point object from the input longitude and latitude
