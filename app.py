@@ -77,20 +77,21 @@ app.layout = html.Div(className='page', children=[
 
 @app.callback(
     [Output("histogram", "figure"),
-    Output("scatter_map", "figure"),
-    Output("ch_graph", "figure"),
-    Output("slider", "min"),
-    Output("slider", "max")],
+     Output("scatter_map", "figure"),
+     Output("ch_graph", "figure"),
+     Output("slider", "min"),
+     Output("slider", "max")],
     [Input("slider", "value"),
-    Input("swatch", "value"),
-    Input("map_Color", "value"),
-    Input("map_Size", "value"),
-    Input("map_Scale", "value"),
-    Input("chloro_Color", "value"),
-    Input("hist_Var", "value"),
-    Input("hist_Bins", "value"),
-    Input("slider_Var", "value")])
-def update_graphs(slider_tuple, swatch, map_Color, map_Size, map_Scale, chloro_Color, hist_Var, hist_Bins, slider_var):
+     Input("swatch", "value"),
+     Input("map_Color", "value"),
+     Input("map_Size", "value"),
+     Input("map_Scale", "value"),
+     Input("chloro_Color", "value"),
+     Input("hist_Var", "value"),
+     Input("hist_Bins", "value"),
+     Input("slider_Var", "value"),
+     Input("hist_Color", "value")])
+def update_graphs(slider_tuple, swatch, map_Color, map_Size, map_Scale, chloro_Color, hist_Var, hist_Bins, slider_var, hist_Color):
     map_Scale = int(map_Scale)
     hist_Bins = int(hist_Bins)
     if slider_tuple is not None:
@@ -98,15 +99,21 @@ def update_graphs(slider_tuple, swatch, map_Color, map_Size, map_Scale, chloro_C
     else:
         frame_subset = df_clean
     # histogram
-    fig_hist = generate_hist(frame=frame_subset, x_val=hist_Var, bins=hist_Bins)
-    #Scatter MapBox
-    fig_scatter = generate_scattermap(frame=frame_subset, size_var=map_Size, color_var=map_Color,swatch=swatch, scale=map_Scale)
-    #Chloro
-    fig_chloro = generate_choropleth(frame= frame_subset, poly_data=neighb, color_var=chloro_Color, swatch=swatch)
-    #slider
+    if hist_Color == "None":
+        hist_Color = None
+    fig_hist = generate_hist(frame=frame_subset, x_val=hist_Var, bins=hist_Bins, color =hist_Color)
+    # Scatter MapBox
+    # TODO Find a way to get the scaling to work nicely
+    fig_scatter = generate_scattermap(frame=frame_subset, size_var=map_Size, color_var=map_Color, swatch=swatch,
+                                      scale=map_Scale)
+    # Chloro
+    fig_chloro = generate_choropleth(frame=frame_subset, poly_data=neighb, color_var=chloro_Color, swatch=swatch)
+    # slider
     slider_max = max(df_clean[slider_var])
     slider_min = min(df_clean[slider_var])
     return fig_hist, fig_scatter, fig_chloro, slider_min, slider_max
+
+
 app.css.config.serve_locally = True
 app.scripts.config.serve_locally = True
 if __name__ == "__main__":

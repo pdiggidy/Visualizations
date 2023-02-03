@@ -59,8 +59,8 @@ def generate_scatter(frame, xval, yval, color="Host_Identity_Verified"):
     return fig
 
 
-def generate_hist(frame, x_val, bins):
-    fig = px.histogram(frame, x=x_val, color="Host_Identity_Verified", nbins=bins)
+def generate_hist(frame, x_val, bins, color):
+    fig = px.histogram(frame, x=x_val, color=color, nbins=bins)
     fig.update_layout({
         "margin": dict(l=20, r=20, t=20, b=20),
         "showlegend": True,
