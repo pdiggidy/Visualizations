@@ -12,12 +12,12 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 
 def generate_scattermap(frame: pd.DataFrame, size_var,
-                        color_var, swatch, scale) -> plotly.graph_objs.Figure:
+                        color_var, swatch, scale, hover_name) -> plotly.graph_objs.Figure:
     exact_rows = frame[frame["exact"] == True]
     exact_rows.dropna(subset=size_var, inplace=True)
     exact_rows.dropna(subset=color_var, inplace=True)
     fig_mapscat = px.scatter_mapbox(exact_rows, lat="lat", lon="long",
-                                    color=color_var, size=size_var, color_continuous_scale=swatch)
+                                    color=color_var, size=size_var, color_continuous_scale=swatch, size_max=scale, hover_name=hover_name)
     # TODO Add scale
     fig_mapscat.update_layout({
         "margin": dict(l=20, r=20, t=20, b=20),

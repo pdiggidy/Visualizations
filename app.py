@@ -14,7 +14,6 @@ from SettingsCard import card_layout
 # https://www.nyc.gov/site/planning/data-maps/open-data/districts-download-metadata.page Neighb maps
 # https://capitalplanning.nyc.gov/capitalproject/846P-5FRESHN#12.88/40.5704/-74.1954 POI locations
 # TODO Select price range of hotels (histogram) limit map view to those hotels
-# TODO Limit results to distance from park for example
 
 
 # df_clean = pd.read_csv("AirbnbWithDistances.csv", low_memory=False, index_col=0)
@@ -24,6 +23,7 @@ df_clean = pd.read_csv("AirbnbWithDistances.csv", index_col=0, low_memory=False)
 df_neighbreviewmean = pd.read_csv("neighb_means.csv", low_memory=False)
 
 df_clean.dropna(subset=["Number of Reviews"], inplace=True)
+df_clean = df_clean[df_clean["Availability 365"] > 0]
 # df_clean["number of reviews"] = df_clean["Number of Reviews"] * 100
 
 filter_val = "Price"
@@ -42,7 +42,7 @@ app = dash.Dash(eager_loading=True, external_stylesheets=[dbc.themes.CYBORG])
 app.layout = html.Div(className='page', children=[
     dbc.Row([
         dbc.Col(
-            html.Div(children=[html.H1("Dashboard Prototype", style=dict(width='100%'), id="title_field")]),
+            html.Div(children=[html.H1("AirBash", style=dict(width='100%'), id="title_field")]),
             width="auto")
     ], justify="center"),
     dbc.Row([
@@ -105,7 +105,7 @@ def update_graphs(slider_tuple, swatch, map_Color, map_Size, map_Scale, chloro_C
     # Scatter MapBox
     # TODO Find a way to get the scaling to work nicely
     fig_scatter = generate_scattermap(frame=frame_subset, size_var=map_Size, color_var=map_Color, swatch=swatch,
-                                      scale=map_Scale)
+                                      scale=map_Scale, hover_name=map_Color)
     # Chloro
     fig_chloro = generate_choropleth(frame=frame_subset, poly_data=neighb, color_var=chloro_Color, swatch=swatch)
     # slider

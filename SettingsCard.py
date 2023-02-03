@@ -13,7 +13,8 @@ from dash import Dash, dcc, html, Input, Output
 #        'distanceTimeSquare']
 hist_color_options = ["None", "Price", "Minimum Nights", "Number of Reviews", "Reviews Per Month", "Review Score",
                       "Availability 365", "Host_Identity_Verified"]
-items = ["Price", "Minimum Nights", "Number of Reviews", "Reviews Per Month", "Review Score", "Availability 365"]
+items = ["Price", "Minimum Nights", "Number of Reviews", "Reviews Per Month", "Review Score", "Availability 365",
+         "NearestPark", "NearestFerry", "NearestLibrary"]
 items_color = ["aggrnyl_r", "agsunset", "blackbody", "bluered", "blues", "blugrn", "bluyl", "brwnyl",
                "bugn", "bupu", "burg", "burgyl", "cividis", "darkmint", "electric", "emrld",
                "gnbu", "greens", "greys", "hot", "inferno", "jet", "magenta", "magma",
@@ -46,7 +47,7 @@ card_layout = dbc.Card([
         ], align="center", justify="between"),
         dbc.Row([
             dbc.Col(html.H6("Map Size Scale"), width="auto"),
-            dbc.Col(dcc.Input(value="1", id="map_Scale"), width="6")
+            dbc.Col(dcc.Input(value="5", id="map_Scale"), width="6")
         ], align="center", justify="between"),
         dbc.Row([
             dbc.Col(html.H6("Neighbourhood Color"), width="auto"),
